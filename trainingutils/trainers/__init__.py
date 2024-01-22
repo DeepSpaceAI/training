@@ -1,1 +1,1 @@
-from training.trainers.diffusion_trainer import DiffusionTrainer
+from trainingutils.trainers.diffusion_trainer import DiffusionTrainer

@@ -1,5 +1,5 @@
-from training.trainers.trainer import Trainer
-from training.utils import Config
+from trainingutils.trainers.trainer import Trainer
+from trainingutils.utils import Config
 from diffusers import DDPMScheduler
 from torch.utils.data import DataLoader
 import torch

@@ -1,5 +1,5 @@
-from training import TrainingCheckpoint
-from training.utils import Config
+from trainingutils.checkpointing import TrainingCheckpoint
+from trainingutils.utils import Config
 import torch
 import os
 import torch.nn as nn

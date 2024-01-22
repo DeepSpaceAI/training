@@ -1,2 +1,2 @@
-from training.utils.config import Config
-from training.utils import collections
+from trainingutils.utils.config import Config
+from trainingutils.utils import collections

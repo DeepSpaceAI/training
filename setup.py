@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 DESCRIPTION = 'Training tools for Deep Learning'
 LONG_DESCRIPTION = 'A python package to assist developers to be more efficient at their own models'
 
@@ -25,7 +25,9 @@ setup(
         'pandas',
         'torch',
         'torchvision',
-        'matplotlib'
+        'matplotlib',
+        'diffusers',
+        'tqdm',
     ],
     keywords=[
         'artificial intellgience',
