@@ -1,2 +1,3 @@
 from trainingutils.checkpointing.hyper_sweep_checkpoint import HyperSweepCheckpoint
-from trainingutils.checkpointing.train_checkpoint import TrainingCheckpoint
+from trainingutils.checkpointing.train_checkpoint import TrainingCheckpointer
+from trainingutils.checkpointing.utils import most_recent_checkpoint

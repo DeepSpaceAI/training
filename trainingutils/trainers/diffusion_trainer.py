@@ -1,5 +1,6 @@
 from trainingutils.trainers.trainer import Trainer
 from trainingutils.utils import Config
+from trainingutils.checkpointing import TrainingCheckpointer
 from diffusers import DDPMScheduler
 from torch.utils.data import DataLoader
 import torch
@@ -75,7 +76,9 @@ class DiffusionTrainer(Trainer):
 
         losses = []
 
-        for epoch in tqdm.tqdm(range(self.epochs), desc="Epoch"):
+        for epoch in tqdm.tqdm(range(self.epoch_iter, self.epochs), desc="Epoch"):
+            self.epoch_iter = epoch
+            
             loss_sum = 0
             for pbc, image in tqdm.tqdm(dataloader, desc="Batch", leave=False):
                 self.optimizer.zero_grad()
@@ -99,4 +102,4 @@ class DiffusionTrainer(Trainer):
             
             losses.append(loss_sum / len(dataloader))
             if epoch % self.checkpoint_iter == 0 and self.checkpoint and bool(epoch):
-                self._save_checkpoint(epoch, losses)
+                self._save(epoch, losses)

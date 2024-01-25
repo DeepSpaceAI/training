@@ -1,45 +1,47 @@
 import torch
+import torch.nn as nn
 import os
 
-class TrainingCheckpoint:
+class TrainingCheckpointer:
     def __init__(
             self,
             model,
             optimizer,
             lr_scheduler,
-            config
+            config,
+            **kwargs
         ):
-        self.model = model
+        self.model: nn.Module = model
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
         self.config = config
+        self.__dict__.update(kwargs)
 
-    @classmethod
-    def load(file_path, device):
-        save_data = torch.load(file_path, device)
-        
-        model = save_data["model"]
-        learning_rate = save_data["learning_rate"]
-        optimizer = save_data["optim"]
-        iter_num = save_data["iter_num"]
-        epoch_count = save_data["epoch_count"]
-        batch_size = save_data["batch_size"]
-
-        return TrainingCheckpoint(
-            model,
-            learning_rate,
-            optimizer,
-            iter_num,
-            epoch_count,
-            batch_size
-        )
+    def load(
+            self,
+            trainer,
+            fpath,
+            device
+        ):
+        torch_data = os.path.join(fpath, "checkpoint.pt")
+        save_data = torch.load(torch_data, device)
+        self.model.load_state_dict(save_data["model_state"], map_location=device)
+        self.optimizer.load_state_dict(save_data["optim_state"], map_location=device)
+        self.lr_scheduler.load_state_dict(save_data["lr_schedueler_state"], map_location=device)
+        self.config.__dict__.update(save_data["config"])
+        trainer.epoch_iter = save_data["epoch_iter"]
     
-    def save(self, fpath):
+    def save(
+            self,
+            epoch_iter,
+            fpath
+        ):
         model_info = {
-            "model": self.model.state_dict(),
-            "optim": self.optimizer.state_dict(),
-            "lr_scheduler": self.lr_scheduler.state_dict(),
-            "config": self.config.__dict__
+            "model_state": self.model.state_dict(),
+            "optim_state": self.optimizer.state_dict(),
+            "lr_scheduler_state": self.lr_scheduler.state_dict(),
+            "config": self.config.__dict__,
+            "epoch_iter": epoch_iter
         }
 
         fpath = os.path.join(fpath, "checkpoint.pt")
