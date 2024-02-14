@@ -43,7 +43,7 @@ class DiffusionTrainer(Trainer):
         learning_rate: float = 1e-4
         learning_rate_warmup_steps: int = 500
         epochs: int = 1000
-        batch_size: int = 25
+        batch_size: int = 5
         shuffle: bool = True
 
         # Acceleration Parameters
@@ -80,24 +80,43 @@ class DiffusionTrainer(Trainer):
             self.epoch_iter = epoch
             
             loss_sum = 0
-            for pbc, image in tqdm.tqdm(dataloader, desc="Batch", leave=False):
+            for data in tqdm.tqdm(dataloader, desc="Batch", leave=False):
+                # Zero the gradients
                 self.optimizer.zero_grad()
+                
+                # Unpack data and put it on the GPU
+                image, b, r = data
+                b = b.to(self.device).long()
+                r = r.to(self.device).float().view(r.size()[0], 1)
 
+                # Add t-timesteps of noise to the image
                 dims = image.size()
                 noise = torch.randn(dims)
                 timesteps = torch.randint(1000, (dims[0],), dtype=torch.int64)
                 noisey_batch = self.scheduler.add_noise(image, noise, timesteps)
 
+                # Put the noisy image and timesteps on the GPU
                 noisey_batch = noisey_batch.to(self.device)
                 noise = noise.to(self.device)
                 timesteps = timesteps.to(self.device)
 
-                predicted_noise = self.model(noisey_batch, timesteps, return_dict=False)[0]
-                loss = mse_loss(noise, predicted_noise)
+                # Predict the noise with the model
+                predicted_noise = self.model(
+                    x=noisey_batch,
+                    timestep=timesteps,
+                    body=b,
+                    radius=r
+                )
 
+                # Calculate the loss and backpropagate
+                loss = mse_loss(noise, predicted_noise)
                 loss.backward()
+
+                # Step the optimizer and learning rate scheduler
                 self.optimizer.step()
                 self.learning_rate_scheduler.step()
+
+                # Sum the loss for the epoch
                 loss_sum += loss.item()
             
             losses.append(loss_sum / len(dataloader))
